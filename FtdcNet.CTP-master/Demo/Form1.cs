@@ -19,7 +19,9 @@ namespace Demo
         FtdcTdAdapter TraderApi;
 
         int iRequestID = 0;
-
+        
+        ThostFtdcDepthMarketDataField lastData = new ThostFtdcDepthMarketDataField();
+        double douLastPrice;
         public Form1()
         {
             InitializeComponent();
@@ -37,13 +39,192 @@ namespace Demo
 
         void DataApi_OnRtnEvent(object sender, OnRtnEventArgs e)
         {
-            Console.WriteLine("DataApi_OnRtnEvent " + e.EventType.ToString());
+            //Console.WriteLine("DataApi_OnRtnEvent " + e.EventType.ToString());
 
             var fld = Conv.P2S<ThostFtdcDepthMarketDataField>(e.Param);
 
-            Console.WriteLine("{0}.{1:D3} {2} {3}", fld.UpdateTime, fld.UpdateMillisec, fld.InstrumentID, fld.LastPrice);
+
+
+            //string sData = "当前交易日:{0} 当前时间:{1}  最后修改时间:{2} 成交量：{3} 卖1价格:{4} 卖1数量:{5} 买1价格:{6} 买1数量:{7} 本次结算价：{8} 成交数量:{9} ";
+            //sData = string.Format(sData, fld.TradingDay, fld.UpdateTime, fld.UpdateMillisec, vol, fld.AskPrice1, fld.AskVolume1, fld.BidPrice1, fld.BidVolume1, fld.SettlementPrice, fld.Volume);
+
+
+
+            int vol = fld.Volume - lastData.Volume;
+            string sLose = "";
+
+            if (lastData.ActionDay == null)
+            {
+                lastData = fld;
+                return;
+            }
+            //Console.WriteLine("{0}.{1:D3} {2} {3}", fld.UpdateTime, fld.UpdateMillisec, fld.InstrumentID, fld.LastPrice);
+            //if (vol > 0)
+            //{
+            //双开 空换 多换 空平 多平
+            string sData2 = "当前交易日:{0} 当前时间:{1} 当前价格：{2} 成交：{3} {4}";
+
+            //多开
+            double douLose;
+            ConsoleColor tColor = ConsoleColor.White;
+
+            int intDirect = 0;
+            if (fld.LastPrice > lastData.AskPrice1 || fld.LastPrice > lastData.BidPrice1)
+            {
+                intDirect = 1;
+                tColor = ConsoleColor.Red;
+            }
+            else if (fld.LastPrice < lastData.AskPrice1 || fld.LastPrice < lastData.BidPrice1)
+            {
+                intDirect = -1;
+                tColor = ConsoleColor.Green;
+            }
+            else {
+                tColor = ConsoleColor.White;
+            }
+            if (vol > 0) {
+                Console.ForegroundColor = tColor;
+                //Console.WriteLine(vol);
+            }
+
+            //else {
+            //    if (fld.LastPrice > fld.AskPrice1)
+            //    {
+            //        intDirect = 1;
+            //    }
+            //    else if (fld.LastPrice < fld.BidPrice1)
+            //    {
+            //        intDirect = -1;
+            //    }
+            //    else {
+            //        intDirect = 0; //middle
+            //    }
+            //}
+            double xx = 0; double yy = 0;
+ 
+            if (intDirect == 1)
+            {
+                //仓位变化 
+                /*
+                 * 
+                16 16 双开 - 成交：16  空平:16 多开:0 多平:16 空开:0
+                14 -10 空平 - 成交：14  空平:-12 多开:2 多平:-12 空开:2
+                8 0 多换 成交：8  空平:-4 多开:4 多平:-4 空开:4
+
+                 * */
+                douLose = fld.OpenInterest - lastData.OpenInterest;
+                #region 上涨
+                //1.多开 多平 空开  空平  
+
+                if (douLose != 0)
+                {
+                    calCtp(vol, douLose, ref xx, ref yy);
+                }
+                else {
+                    xx = vol;
+                    yy = vol;
+                }
+
+                
+                sLose += " 空平:" + xx;
+                sLose += " 多开:" + yy;
+
+                #endregion
+            }
+            if (intDirect == -1)
+            {
+                /*
+                 46  -14 多平
+                10 0 空换
+                2 -2 双平
+                 */
+                #region 下跌
+                douLose = fld.OpenInterest - lastData.OpenInterest;
+
+                if (douLose != 0)
+                {
+                    calCtp(vol, douLose, ref xx, ref yy);
+                }
+                else {
+                    xx = vol;
+                    yy = vol;
+                }
+
+           
+
+                sLose += " 多平:" + xx;
+                sLose += " 空开:" + yy;
+                #endregion
+
+            }
+           
+            if(vol > 0)
+                Console.WriteLine(string.Format(sData2,
+                            fld.TradingDay, fld.UpdateTime, fld.LastPrice,
+                            vol, sLose)
+                        );
+        
+
+        //if (fld.OpenInterest < lastData.OpenInterest)
+        //{
+
+        //    sLose = " 平仓: " + (fld.OpenInterest - lastData.OpenInterest );
+        //}
+        //else if (fld.OpenInterest == lastData.OpenInterest)
+        //{
+
+        //    sLose = " 换手: " + (lastData.Volume - fld.Volume);
+        //}
+        //else
+        //{
+        //    sLose = " 增仓: " + (lastData.Volume - fld.Volume);
+        //}
+        //if ( vol > 0 )
+        //Console.WriteLine(string.Format(sData2,
+        //            fld.TradingDay, fld.UpdateTime, fld.LastPrice,
+        //            vol, sLose)
+
+        //        );
+        //}
+        lastData = fld;
+            douLastPrice = fld.LastPrice;
+
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sum">总成交量</param>
+        /// <param name="absSum">仓位变动</param>
+        /// <param name="xx">平仓</param>
+        /// <param name="yy">开仓</param>
+        void calCtp(double sum, double absSum, ref double xx, ref double yy )
+        {
+            //sum 21  absum -5
+            double intStart;
+            xx = -1;
+            yy = -1;
+
+            intStart = (sum * -1);
+            for (double x = intStart; x <= sum; x++)
+            {
+               
+                for (double y = intStart; y <= sum; y++)
+                {
+                    if (
+                        (Math.Abs(x) + y == sum)
+                        && (x + y == absSum)
+                        )
+                    {
+                        //
+                        xx = x;
+                        yy = y;
+                        break;
+                        Console.WriteLine(string.Format("x={0}   y={1}", x, y));
+                    }
+                }
+            }
+        }
         void DataApi_OnRspEvent(object sender, OnRspEventArgs e)
         {
             Console.WriteLine("DataApi_OnRspEvent " + e.EventType.ToString());
@@ -113,9 +294,10 @@ namespace Demo
         private void button2_Click(object sender, EventArgs e)
         {
             List<string> inst = new List<string>();
-            inst.Add("ag1912");
-            inst.Add("j1909");
-            inst.Add("SR909");
+            inst.Add("i2001");
+            //inst.Add("ag1912");
+            //inst.Add("j1909");
+            //inst.Add("SR909");
             if (DataApi != null)
                 DataApi.SubscribeMarketData(inst.ToArray());
         }

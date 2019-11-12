@@ -236,7 +236,7 @@
             this.txtFrontMD.Name = "txtFrontMD";
             this.txtFrontMD.Size = new System.Drawing.Size(349, 21);
             this.txtFrontMD.TabIndex = 2;
-            this.txtFrontMD.Text = "tcp://180.168.146.187:13040";
+            this.txtFrontMD.Text = "tcp://180.168.146.187:10111";
             // 
             // label5
             // 
@@ -253,7 +253,7 @@
             this.txtFrontTD.Name = "txtFrontTD";
             this.txtFrontTD.Size = new System.Drawing.Size(349, 21);
             this.txtFrontTD.TabIndex = 1;
-            this.txtFrontTD.Text = "tcp://180.168.146.187:13030";
+            this.txtFrontTD.Text = "tcp://180.168.146.187:10101";
             // 
             // label3
             // 
@@ -279,6 +279,7 @@
             this.txtAuthCode.Name = "txtAuthCode";
             this.txtAuthCode.Size = new System.Drawing.Size(132, 21);
             this.txtAuthCode.TabIndex = 6;
+            this.txtAuthCode.Text = "0000000000000000";
             // 
             // txtAppID
             // 
@@ -286,6 +287,7 @@
             this.txtAppID.Name = "txtAppID";
             this.txtAppID.Size = new System.Drawing.Size(132, 21);
             this.txtAppID.TabIndex = 5;
+            this.txtAppID.Text = "simnow_client_test";
             // 
             // label2
             // 
@@ -311,6 +313,7 @@
             this.txtPasswd.Name = "txtPasswd";
             this.txtPasswd.Size = new System.Drawing.Size(132, 21);
             this.txtPasswd.TabIndex = 4;
+            this.txtPasswd.Text = "lovEmac9";
             // 
             // txtUserID
             // 
@@ -318,6 +321,7 @@
             this.txtUserID.Name = "txtUserID";
             this.txtUserID.Size = new System.Drawing.Size(132, 21);
             this.txtUserID.TabIndex = 3;
+            this.txtUserID.Text = "154060";
             // 
             // label8
             // 
