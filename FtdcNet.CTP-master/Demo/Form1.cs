@@ -294,7 +294,8 @@ namespace Demo
         private void button2_Click(object sender, EventArgs e)
         {
             List<string> inst = new List<string>();
-            inst.Add("i2001");
+           // inst.Add("i2001");
+            inst.Add("ag1912");
             //inst.Add("ag1912");
             //inst.Add("j1909");
             //inst.Add("SR909");
@@ -316,7 +317,7 @@ namespace Demo
         {
             if (DataApi != null)
             {
-                DataApi.UnSubscribeMarketData(new string[] { "ag1912" });
+                DataApi.UnSubscribeMarketData(new string[] { "i2001" });
             }
         }
 
